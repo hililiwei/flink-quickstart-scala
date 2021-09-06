@@ -32,8 +32,6 @@ import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.streaming.api.windowing.triggers.ContinuousProcessingTimeTrigger
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow
 import org.apache.flink.util.Collector
-import java.sql.Date
-import java.text.SimpleDateFormat
 
 /**
  * Skeleton for a Flink Streaming Job.
@@ -68,39 +66,40 @@ object StreamingJob {
         value.name
       }
     })
-      .window(TumblingProcessingTimeWindows.of(Time.minutes(1)))
-      .trigger(ContinuousProcessingTimeTrigger.of[TimeWindow](Time.seconds(10)))
-      .evictor(CountEvictor.of[TimeWindow](0, true))
-      .process(new ProcessWindowFunction[TestData, TestData, String, TimeWindow] {
-
-
-        val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-
-        var valueState: ValueState[Double] = _
-
-        override def open(parameters: Configuration): Unit = {
-
-          val desc = new ValueStateDescriptor[Double]("value_state",createTypeInformation[Double])
-          valueState = getRuntimeContext.getState(desc)
-        }
-
-        override def clear(context: Context): Unit = {
-          println(s"Start Clear:${simpleDateFormat.format(new Date(context.currentProcessingTime))},count:${valueState.value()}" )
-          super.clear(context)
-        }
-
-        override def process(key: String,
-                             context: Context,
-                             elements: Iterable[TestData],
-                             out: Collector[TestData]): Unit = {
-          var count = valueState.value()
-          elements.foreach(one => {
-            count = count + one.price
-          })
-          valueState.update(count)
-          println(s"trigger:${simpleDateFormat.format(new Date(context.currentProcessingTime))},count:${valueState.value()}" )
-        }
-      })
+      .window(TumblingProcessingTimeWindows.of(Time.seconds(20)))
+      .trigger(ContinuousProcessingTimeTrigger.of[TimeWindow](Time.seconds(5)))
+      .sum("price")
+      .print()
+//      .process(new ProcessWindowFunction[TestData, TestData, String, TimeWindow] {
+//
+//
+//        val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+//
+//        var valueState: ValueState[Double] = _
+//
+//        override def open(parameters: Configuration): Unit = {
+//
+//          val desc = new ValueStateDescriptor[Double]("value_state",createTypeInformation[Double])
+//          valueState = getRuntimeContext.getState(desc)
+//        }
+//
+//        override def clear(context: Context): Unit = {
+//          println(s"Start Clear:${simpleDateFormat.format(new Date(context.currentProcessingTime))},count:${valueState.value()}" )
+//          super.clear(context)
+//        }
+//
+//        override def process(key: String,
+//                             context: Context,
+//                             elements: Iterable[TestData],
+//                             out: Collector[TestData]): Unit = {
+//          var count = valueState.value()
+//          elements.foreach(one => {
+//            count = count + one.price
+//          })
+//          valueState.update(count)
+//          println(s"trigger:${simpleDateFormat.format(new Date(context.currentProcessingTime))},count:${valueState.value()}" )
+//        }
+//      })
     env.execute("Flink Streaming Scala API Skeleton")
   }
 }

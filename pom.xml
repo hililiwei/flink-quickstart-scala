@@ -22,14 +22,14 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.llw</groupId>
-	<artifactId>flink-quickstart-scala</artifactId>
+	<artifactId>quickstart-llw</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<modules>
 		<module>flink-jira</module>
 	</modules>
 	<packaging>pom</packaging>
 
-	<name>Flink Quickstart Job</name>
+	<name>Quickstart Job</name>
 
 
 	<properties>
